@@ -1,0 +1,22 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "8a6af54c-f2dc-41e8-80f8-4b1020506509",
+  "alias": "HelloGraphWebPart",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  "requiresCustomScript": false,
+
+  "preconfiguredEntries": [{
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
+    "group": { "default": "Other" },
+    "title": { "default": "Hello Graph" },
+    "description": { "default": "A web part to demonstrate how to store user-centric properties in the Graph" },
+    "officeFabricIconFontName": "People",
+    "properties": {
+      "openExtensionName": "Xyz.Powney.Channel"
+    }
+  }]
+}
