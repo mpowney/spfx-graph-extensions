@@ -6,16 +6,15 @@ import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField
 } from '@microsoft/sp-webpart-base';
-import { Placeholder } from "@pnp/spfx-controls-react/lib/Placeholder";
-import { Logger, LogLevel } from "@pnp/logging";
+import { Logger, LogLevel, ConsoleListener } from "@pnp/logging";
 
 import * as strings from 'HelloGraphWebPartStrings';
 import HelloGraph from './components/HelloGraph';
 import { IHelloGraphProps } from './components/IHelloGraphProps';
-import { MSGraphClient } from '@microsoft/sp-http';
 
 export interface IHelloGraphWebPartProps {
   openExtensionName: string;
+  openExtensionValue: string;
 }
 
 const LOG_SOURCE = `HelloGraphWebPart.ts`;
@@ -24,48 +23,20 @@ export default class HelloGraphWebPart extends BaseClientSideWebPart<IHelloGraph
 
   public render(): void {
 
-    const extensionProvisioned: boolean = false;
+    Logger.subscribe(new ConsoleListener());
+    Logger.activeLogLevel = LogLevel.Verbose;
 
-    const element: React.ReactElement<IHelloGraphProps> = !extensionProvisioned ? React.createElement(
-        Placeholder,
-        {
-          iconName: 'Edit',
-          iconText: 'Provision the Open Graph extension',
-          description: 'Please configure the web part.',
-          buttonLabel: 'Provision',
-          onConfigure: this._provisionButtonClick.bind(this)
-        }
-      ) : React.createElement(
+    const element: React.ReactElement<IHelloGraphProps> = React.createElement(
         HelloGraph,
         {
-          description: this.properties.openExtensionName
+          openExtensionName: this.properties.openExtensionName,
+          openExtensionValue: this.properties.openExtensionValue,
+          userLoginName: this.context.pageContext.user.loginName,
+          msGraphClientFactory: this.context.msGraphClientFactory
         }
       );
 
     ReactDom.render(element, this.domElement);
-  }
-
-  private _provisionButtonClick(): void {
-
-    this.context.msGraphClientFactory.getClient().then((graphClient: MSGraphClient): void => {
-
-      graphClient.api(`/users/${this.context.pageContext.user.loginName}/extensions`)
-        
-        .post(JSON.stringify({ 
-          "@odata.type": "microsoft.graph.openTypeExtension",
-          "extensionName": this.properties.openExtensionName
-        })).then(value => {
-
-          Logger.log({ level: LogLevel.Info, message: `${LOG_SOURCE} graph call to proviison open extension complete`});
-
-        }).catch(error => {
-
-          Logger.log({ level: LogLevel.Error, message: `${LOG_SOURCE} Error occurred calling graph to proviison open extension: ${error}`});
-
-        });
-
-    });
-      
   }
 
   protected onDispose(): void {
@@ -89,6 +60,10 @@ export default class HelloGraphWebPart extends BaseClientSideWebPart<IHelloGraph
               groupFields: [
                 PropertyPaneTextField('openExtensionName', {
                   label: strings.OpenExtensionNameFieldLabel
+                }),
+                PropertyPaneTextField('openExtensionValue', {
+                  label: strings.OpenExtensionValueFieldLabel,
+                  multiline: true
                 })
               ]
             }

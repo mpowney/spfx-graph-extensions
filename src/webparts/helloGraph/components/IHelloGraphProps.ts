@@ -1,3 +1,8 @@
+import { MSGraphClientFactory } from "@microsoft/sp-http";
+
 export interface IHelloGraphProps {
-  description: string;
+  openExtensionName: string;
+  openExtensionValue: string;
+  userLoginName: string;
+  msGraphClientFactory: MSGraphClientFactory;
 }
