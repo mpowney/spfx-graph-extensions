@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Placeholder } from "@pnp/spfx-controls-react/lib/Placeholder";
-import { DefaultButton, PrimaryButton, IButtonProps } from 'office-ui-fabric-react/lib/Button';
+import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
+import { Shimmer, ShimmerElementType } from 'office-ui-fabric-react/lib/Shimmer';
 import { Logger, LogLevel } from "@pnp/logging";
 import { MSGraphClient } from '@microsoft/sp-http';
 
@@ -24,23 +26,15 @@ export default class HelloGraph extends React.Component<IHelloGraphProps, IHello
     this.state = {
       isLoading: false,
       extensionProvisioned: false
-    }
-
-  }
-
-  private getGraphOpenExtensionValue(value: any = null): any {
-    const graphOpenExtensionValue = {
-      "@odata.type": "microsoft.graph.openTypeExtension",
-      "extensionName": this.props.openExtensionName,
-      ...value
     };
-
 
   }
 
   public componentDidMount(): void {
 
-    Logger.log({level: LogLevel.Verbose, message: `${LOG_SOURCE} HelloGraph.tsx calling Graph`})
+    Logger.log({level: LogLevel.Verbose, message: `${LOG_SOURCE} HelloGraph.tsx calling Graph`});
+
+    this.setState({isLoading: true});
 
     this.props.msGraphClientFactory.getClient().then((graphClient: MSGraphClient): void => {
 
@@ -48,10 +42,11 @@ export default class HelloGraph extends React.Component<IHelloGraphProps, IHello
 
         .get().then(returnValue => {
 
-          Logger.log({level: LogLevel.Info, message: `${LOG_SOURCE} HelloGraph.tsx Graph return: `, data: returnValue})
+          this.setState({isLoading: false});
+          Logger.log({level: LogLevel.Info, message: `${LOG_SOURCE} HelloGraph.tsx Graph return: `, data: returnValue});
 
           const foundExtension = returnValue.extensions 
-            && returnValue.extensions.filter(extension => { return extension.extensionName == this.props.openExtensionName})
+            && returnValue.extensions.filter(extension => { return extension.id == this.props.openExtensionName; })
             || [];
           if (foundExtension.length > 0) {
             
@@ -61,9 +56,9 @@ export default class HelloGraph extends React.Component<IHelloGraphProps, IHello
 
           }
 
-        })
+        });
 
-    })
+    });
 
   }
 
@@ -81,10 +76,32 @@ export default class HelloGraph extends React.Component<IHelloGraphProps, IHello
         .post(JSON.stringify(graphOpenExtensionValue)).then(value => {
 
           Logger.log({ level: LogLevel.Info, message: `${LOG_SOURCE} _provisionButtonClick() graph call to provision open extension complete`});
+          this.setState({ extensionProvisioned: true });
 
         }).catch(error => {
 
           Logger.log({ level: LogLevel.Error, message: `${LOG_SOURCE} _provisionButtonClick() Error occurred calling graph to provision open extension:`, data: error});
+
+        });
+
+    });
+      
+  }
+
+  private _deleteButtonClick(): void {
+
+    this.props.msGraphClientFactory.getClient().then((graphClient: MSGraphClient): void => {
+
+      graphClient.api(`/users/${this.props.userLoginName}/extensions/${this.props.openExtensionName}`)
+        
+        .delete().then(value => {
+
+          Logger.log({ level: LogLevel.Info, message: `${LOG_SOURCE} _deleteButtonClick() graph call to provision open extension complete`});
+          this.setState({ extensionProvisioned: false });
+
+        }).catch(error => {
+
+          Logger.log({ level: LogLevel.Error, message: `${LOG_SOURCE} _deleteButtonClick() Error occurred calling graph to provision open extension:`, data: error});
 
         });
 
@@ -122,6 +139,16 @@ export default class HelloGraph extends React.Component<IHelloGraphProps, IHello
 
   public render(): React.ReactElement<IHelloGraphProps> {
 
+    if (this.state.isLoading) {
+      return (
+        <div className={ styles.helloGraph }>
+          <Shimmer className={styles.shimmer } />
+          <Shimmer className={styles.shimmer } width="75%" />
+          <Shimmer className={styles.shimmer } width="50%" />
+        </div>
+      );
+    }
+
     return (
       <div className={ styles.helloGraph }>
 
@@ -141,8 +168,11 @@ export default class HelloGraph extends React.Component<IHelloGraphProps, IHello
                 <DefaultButton
                   data-automation-id="test"
                   text="Update Value"
-                  onClick={this._updateValueButtonClick.bind(this)}
-                />
+                  onClick={this._updateValueButtonClick.bind(this)} />
+                <DefaultButton
+                  data-automation-id="test"
+                  text="Delete open extension"
+                  onClick={this._deleteButtonClick.bind(this)} />
               </div>
             </div>
           </div>

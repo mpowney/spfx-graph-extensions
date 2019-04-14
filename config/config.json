@@ -9,11 +9,29 @@
           "manifest": "./src/webparts/helloGraph/HelloGraphWebPart.manifest.json"
         }
       ]
+    },
+    "hello-api-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/helloApi/HelloApiWebPart.js",
+          "manifest": "./src/webparts/helloApi/HelloApiWebPart.manifest.json"
+        }
+      ]
+    },
+    "hello-custom-application-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/helloCustomApplication/HelloCustomApplicationWebPart.js",
+          "manifest": "./src/webparts/helloCustomApplication/HelloCustomApplicationWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "HelloGraphWebPartStrings": "lib/webparts/helloGraph/loc/{locale}.js",
-    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js"
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
+    "HelloApiWebPartStrings": "lib/webparts/helloApi/loc/{locale}.js",
+    "HelloCustomApplicationWebPartStrings": "lib/webparts/helloCustomApplication/loc/{locale}.js"
   }
 }
